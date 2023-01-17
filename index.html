@@ -15,7 +15,11 @@
   </p>
 
   <p>
-    2. You can add as many files/photos as you please. When done, click the button below to list the keys stored in IndexedDB (one for each file). <br>
+    2. Add as many files/photos as you please. The file/photo is stored in IndexedDB as soon as you have selected it.
+  </p>
+
+  <p>
+    3. When done, click the button below to list the keys stored in IndexedDB (one for each file). <br>
     <input id="btnListIndexedDBKeys" type="button" value="List keys stored in IndexedDB">
   </p>
 
@@ -23,11 +27,18 @@
     <strong>Keys stored in IndexedDB:</strong>
     <div id="keysResult" style="min-height: 200px; border: 1px solid gray;"></div>
   </p> 
+
+  <p>
+    <strong>Debug output (technical trace):</strong>
+    <div id="debugOutput" style="min-height: 200px; border: 1px solid gray; font-family: 'Courier New', Courier, monospace; font-size: 0.8em;"></div>
+  </p>
+  
   
   <script>
     const inputElement = document.getElementById('fileUpload');
     const btnListKeys = document.getElementById('btnListIndexedDBKeys');
     const divKeysResult = document.getElementById('keysResult');
+    const debugOutput = document.getElementById('debugOutput');
 
     inputElement.addEventListener('change', handleFiles, false);   
     btnListKeys.addEventListener('click',btnListIndexedDBKeys_onClick, false);    
@@ -39,26 +50,25 @@
             file: fileList[0]
         };
 
-        console.log('fileToSave=', fileToSave);
+        traceLog('fileToSave=', fileToSave);
         addFileToIndexedDB(fileToSave).then( (result) => {
-            console.log('Sucessfully stored file in IndexedDB.');
+            traceLog('Sucessfully stored file in IndexedDB.');
         }, (error) => {
-            console.error('Error while storing file in IndexedDB.');
+            traceLog('Error while storing file in IndexedDB.');
         });
     }
 
     function btnListIndexedDBKeys_onClick() {
         getAllIndexedDBKeys().then( (keys) => {
-            console.log('Successfully fetched all keys from IndexedDB, keys.length=', keys.length);
+            traceLog(`Successfully fetched all keys from IndexedDB, keys.length=${keys.length}`);
             divKeysResult.innerHTML = '';
 
             for (var i=0; i<keys.length; i++) {
-                console.log(`Key[${i}]=${keys[i]}`);
+                traceLog(`Key[${i}]=${keys[i]}`);
                 divKeysResult.innerHTML += `${keys[i]}<br/>`;
             }
         }, (error) => {
-            console.error('Error while retreiving keys from IndexedDB.');
-            console.error(error);
+            traceLog('Error while retreiving keys from IndexedDB.', error);            
             divKeysResult.innerHTML = 'Error while retreiving keys from IndexedDB.';
         })
     }
@@ -78,8 +88,7 @@
             const request = indexedDB.open(SETTINGS.INDEXED_DB_NAME, 1);
 
             request.onerror = function (event) {
-                console.error('An error occurred while opening IndexedDB.');
-                console.error(event);
+                traceLog('An error occurred while opening IndexedDB.', event);                
                 reject(event);
             };
 
@@ -90,7 +99,7 @@
             };
 
             request.onsuccess = function () {
-                console.log('IndexedDB opened successfully.');
+                traceLog('IndexedDB opened successfully.');
 
                 const db = request.result;
                 const transaction = db.transaction(SETTINGS.INDEXED_DB_STORE, 'readwrite');
@@ -99,7 +108,7 @@
                 const putRequest = store.put(file);
 
                 putRequest.onerror = function (error) {                    
-                    console.error(error);
+                    traceLog('putRequest error=', error);
                     reject(error);
                 }
                 putRequest.onsuccess = function () {                    
@@ -123,8 +132,7 @@
             const requestOpen = indexedDB.open(SETTINGS.INDEXED_DB_NAME, 1);
 
             requestOpen.onerror = function (error) {
-                console.error('An error occurred while opening IndexedDB.');
-                console.error(error);
+                traceLog('An error occurred while opening IndexedDB.', error);
                 reject(error);
                 return;
             };
@@ -149,7 +157,7 @@
                 const requestGetAllKeys = store.getAllKeys();
 
                 requestGetAllKeys.onerror = function (error) {
-                    onsole.error(event);
+                    traceLog('requestGetAllKeys error=', event);
                     reject(error);
                 };
 
@@ -168,6 +176,10 @@
         return promise; 
     }
 
+    const traceLog = (msg, obj) => {
+        console.log(msg, obj);
+        debugOutput.innerHTML += `${msg}${obj ? JSON.stringify(obj) : ''}<br/>`;
+    }
 
   </script>
 

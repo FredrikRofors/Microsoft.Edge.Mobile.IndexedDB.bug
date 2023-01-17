@@ -19,12 +19,12 @@ or setup it up on your local machine follow these steps:
 
 ## Browsers where the bug manifests itself
 <ul>
-    <li>Microsoft Edge Mobile for iOS (connected to a work account</li>
+    <li>Microsoft Edge Mobile (ver 108.0.1462.77) for iOS (connected to a work account)</li>
 </ul>
 
 ## Browsers where the bug is NOT present
 <ul>
-    <li>Microsoft Edge Mobile for iOS (not connected to a work account)
+    <li>Microsoft Edge Mobile for iOS (NOT connected to a work account)
     <li>Microsoft Edge Desktop for Windows</li>
     <li>Chrome for Windows</li>
     <li>Chrome for iOS
