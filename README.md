@@ -15,7 +15,7 @@ or setup it up on your local machine follow these steps:
 </ol>
 
 ## Bug description
-[Content goes here]
+When Microsoft Edge Mobile browser on iOS is connected to a work account, the Javascript code storing the file to IndexedDB silently fails (no errors). Subsequent calls to IndexedDB to retrieve the keys stored in the IndexedDB returns 0 (no keys). If the Edge browser is disconnected to the work account all works well.
 
 ## Browsers where the bug manifests itself
 <ul>
