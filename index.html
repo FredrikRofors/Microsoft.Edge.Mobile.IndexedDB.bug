@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+</head>
+<body style="font-family: Arial, Helvetica, sans-serif;">
+
+  <h1>IndexedDB bug in Microsoft Edge Mobile </h1>
+  
+  <p>This bug only manifests itself in Microsoft Edge Mobile on iOS, when Edge is connected to a work account.</p>
+  
+  <p>
+    1. Select a file or take a photo.
+    <input id="fileUpload" type='file' accept='image/*' capture='environment' />
+  </p>
+
+  <p>
+    2. You can add as many files/photos as you please. When done, click the button below to list the keys stored in IndexedDB (one for each file). <br>
+    <input id="btnListIndexedDBKeys" type="button" value="List keys stored in IndexedDB">
+  </p>
+
+  <p style="margin-top: 40px;">
+    <strong>Keys stored in IndexedDB:</strong>
+    <div id="keysResult" style="min-height: 200px; border: 1px solid gray;"></div>
+  </p> 
+  
+  <script>
+    const inputElement = document.getElementById('fileUpload');
+    const btnListKeys = document.getElementById('btnListIndexedDBKeys');
+    const divKeysResult = document.getElementById('keysResult');
+
+    inputElement.addEventListener('change', handleFiles, false);   
+    btnListKeys.addEventListener('click',btnListIndexedDBKeys_onClick, false);    
+
+    function handleFiles() {
+        const fileList = this.files; 
+        const fileToSave = {
+            timestamp: Date.now(),
+            file: fileList[0]
+        };
+
+        console.log('fileToSave=', fileToSave);
+        addFileToIndexedDB(fileToSave).then( (result) => {
+            console.log('Sucessfully stored file in IndexedDB.');
+        }, (error) => {
+            console.error('Error while storing file in IndexedDB.');
+        });
+    }
+
+    function btnListIndexedDBKeys_onClick() {
+        getAllIndexedDBKeys().then( (keys) => {
+            console.log('Successfully fetched all keys from IndexedDB, keys.length=', keys.length);
+            divKeysResult.innerHTML = '';
+
+            for (var i=0; i<keys.length; i++) {
+                console.log(`Key[${i}]=${keys[i]}`);
+                divKeysResult.innerHTML += `${keys[i]}<br/>`;
+            }
+        }, (error) => {
+            console.error('Error while retreiving keys from IndexedDB.');
+            console.error(error);
+            divKeysResult.innerHTML = 'Error while retreiving keys from IndexedDB.';
+        })
+    }
+  </script>
+
+  <script>
+    const SETTINGS = {
+        INDEXED_DB_NAME: 'PhotoApp',
+        INDEXED_DB_STORE: 'OfflineFiles' 
+    }
+
+    const addFileToIndexedDB = async (file) => {
+        let promise = new Promise( (resolve, reject) => {
+            const indexedDB = window.indexedDB;
+
+            // open (or create) the database
+            const request = indexedDB.open(SETTINGS.INDEXED_DB_NAME, 1);
+
+            request.onerror = function (event) {
+                console.error('An error occurred while opening IndexedDB.');
+                console.error(event);
+                reject(event);
+            };
+
+            // create the schema on create and version upgrade
+            request.onupgradeneeded = function () {
+                const db = request.result;
+                db.createObjectStore(SETTINGS.INDEXED_DB_STORE, { keyPath: 'timestamp' });            
+            };
+
+            request.onsuccess = function () {
+                console.log('IndexedDB opened successfully.');
+
+                const db = request.result;
+                const transaction = db.transaction(SETTINGS.INDEXED_DB_STORE, 'readwrite');
+                const store = transaction.objectStore(SETTINGS.INDEXED_DB_STORE);
+
+                const putRequest = store.put(file);
+
+                putRequest.onerror = function (error) {                    
+                    console.error(error);
+                    reject(error);
+                }
+                putRequest.onsuccess = function () {                    
+                    resolve();
+                }
+
+                transaction.oncomplete = function () {
+                    db.close();
+                };                
+            }
+        });
+
+        return promise; 
+    }; 
+
+    const getAllIndexedDBKeys = async () => {
+        let promise = new Promise( (resolve, reject) => {
+            let result = new Array();
+
+            const indexedDB = window.indexedDB;
+            const requestOpen = indexedDB.open(SETTINGS.INDEXED_DB_NAME, 1);
+
+            requestOpen.onerror = function (error) {
+                console.error('An error occurred while opening IndexedDB.');
+                console.error(error);
+                reject(error);
+                return;
+            };
+
+            // Create the schema on create and version upgrade
+            requestOpen.onupgradeneeded = function () {
+                const db = requestOpen.result;
+                db.createObjectStore(SETTINGS.INDEXED_DB_STORE, { keyPath: 'timestamp' });            
+            };
+
+            requestOpen.onsuccess = function () {
+                const db = requestOpen.result;
+                
+                if (!db.objectStoreNames.contains(SETTINGS.INDEXED_DB_STORE)) {                    
+                    reject(`IndexedDB store does ${SETTINGS.INDEXED_DB_STORE} not exist.`);
+                    return;
+                }
+
+                const transaction = db.transaction(SETTINGS.INDEXED_DB_STORE, 'readwrite');
+                const store = transaction.objectStore(SETTINGS.INDEXED_DB_STORE);
+
+                const requestGetAllKeys = store.getAllKeys();
+
+                requestGetAllKeys.onerror = function (error) {
+                    onsole.error(event);
+                    reject(error);
+                };
+
+                requestGetAllKeys.onsuccess = function(e) {
+                    let keys = requestGetAllKeys.result;  
+                    
+                    for (let i=0; i < keys.length; i++) {
+                        result.push(keys[i]);
+                    }
+                    
+                    resolve(result);                    
+                };
+            }
+        });
+
+        return promise; 
+    }
+
+
+  </script>
+
+</body>
+</html>
