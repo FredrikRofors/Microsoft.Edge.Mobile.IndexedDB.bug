@@ -5,7 +5,8 @@ This project is used to demo a bug found in the Microsoft Edge Mobile browser fo
 The project consists of a sigle index.html page with a simple file upload. 
 After selecting a file, the file is stored in IndexedDB (PhotoApp -> OfflineFiles) using "native" or plain vanilla JavaScript (no 3rd party libraries) and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank">IndexedDB browser API</a>.
 
-If you want to try it out on your local machine, follow these steps:
+You can <a href="https://fry-edge-mobile-indexeddb-bug.s3.eu-west-1.amazonaws.com/index.html" target="_blank">try out the demo app here</a>
+or setup it up on your local machine follow these steps:
 <ol>
     <li>Clone this repo.</li>
     <li>Run 'npm install' to install <a href="https://www.npmjs.com/package/http-server" target="_blank">http-server</a>, a simple Node based static HTTP server. </li>
