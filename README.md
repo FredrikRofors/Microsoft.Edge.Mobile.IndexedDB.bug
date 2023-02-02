@@ -15,7 +15,17 @@ or setup it up on your local machine following these steps:
 </ol>
 
 ## Bug description
-When Microsoft Edge Mobile browser on iOS is connected to a work account, the Javascript code storing the file to IndexedDB silently fails (no errors). Subsequent calls to IndexedDB to retrieve the keys stored in the IndexedDB returns 0 (no keys). If the Edge browser is disconnected to the work account all works well.
+When Microsoft Edge Mobile browser on iOS is connected to a work account, the Javascript code storing the file to IndexedDB silently fails (no errors). Subsequent calls to IndexedDB to retrieve the keys stored in the IndexedDB returns 0 (no keys found). If the Edge browser is disconnected to the work account all works well.
+
+<strong>Status update 2023.01.26 from Microsoft Senior Escalation Engineer:</strong><br>
+<i>
+I received news from our Product Group, which mentioned that this is actually a known limitation of Edge iOS, that has its reasons from the underlying platform which allows persistent storage only for one instance per application.
+
+Actually, this persistent storage is only available for MSA or "not signed in"-instance but not to the AAD-instance (as the storage needs to be separated between the accounts). 
+
+But we plan to improve the situation in the upcoming semester to allow the persistent storage to become dynamic, so it would be available to AAD in case an AAD-instance exists (which then would cause the MSA-account to lose the persistent storage).
+</i>
+
 
 ## Browsers where the bug manifests itself
 <ul>
@@ -27,6 +37,7 @@ When Microsoft Edge Mobile browser on iOS is connected to a work account, the Ja
     <li>Microsoft Edge Mobile for iOS (NOT connected to a work account)
     <li>Microsoft Edge Desktop for Windows</li>
     <li>Chrome for Windows</li>
-    <li>Chrome for iOS
+    <li>Chrome for iOS</li>
+    <li>Chrome on Android</li>
 </ul>
 
